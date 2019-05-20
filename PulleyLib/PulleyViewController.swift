@@ -432,6 +432,12 @@ open class PulleyViewController: UIViewController, PulleyDrawerViewControllerDel
         }
     }
     
+    @IBInspectable public var isAutoDimming: Bool = false {
+        didSet {
+            
+        }
+    }
+    
     /// The starting position for the drawer when it first loads
     public var initialDrawerPosition: PulleyPosition = .collapsed
     
@@ -1117,11 +1123,14 @@ open class PulleyViewController: UIViewController, PulleyDrawerViewControllerDel
      
      - returns: a frame for moving backgroundDimmingView according to drawer position
      */
-    private func backgroundDimmingViewFrameForDrawerPosition(_ drawerPosition: CGFloat) -> CGRect {
+    private func backgroundDimmingViewFrameForDrawerPosition(_ drawerPosition: CGFloat) -> CGRect {var backgroundDimmingViewFrame = backgroundDimmingView.frame
+        if isAutoDimming {
         let cutoutHeight = (2 * drawerCornerRadius)
-        var backgroundDimmingViewFrame = backgroundDimmingView.frame
-        backgroundDimmingViewFrame.origin.y = 0 - drawerPosition + cutoutHeight
-
+            backgroundDimmingViewFrame.origin.y = 0 - drawerPosition + cutoutHeight
+        }
+        else {
+            backgroundDimmingViewFrame.origin.y = 0
+        }
         return backgroundDimmingViewFrame
     }
     
@@ -1246,6 +1255,9 @@ open class PulleyViewController: UIViewController, PulleyDrawerViewControllerDel
 
             completion?(true)
         }
+        if position != .closed && !isAutoDimming {
+            backgroundDimmingView.alpha = 0.3
+        }
     }
     
     /**
@@ -1273,7 +1285,11 @@ open class PulleyViewController: UIViewController, PulleyDrawerViewControllerDel
         controller.view.frame = primaryContentContainer.bounds
         controller.view.layoutIfNeeded()
         
-        if animated
+        if animated@IBInspectable public var isAutoDimming: Bool = false {
+            didSet {
+                
+            }
+        }
         {
             UIView.transition(with: primaryContentContainer, duration: 0.5, options: .transitionCrossDissolve, animations: { [weak self] () -> Void in
                 
@@ -1656,7 +1672,9 @@ extension PulleyViewController: UIScrollViewDelegate {
                 (drawerContentViewController as? PulleyDrawerViewControllerDelegate)?.makeUIAdjustmentsForFullscreen?(progress: progress, bottomSafeArea: pulleySafeAreaInsets.bottom)
                 (primaryContentViewController as? PulleyPrimaryContentControllerDelegate)?.makeUIAdjustmentsForFullscreen?(progress: progress, bottomSafeArea: pulleySafeAreaInsets.bottom)
                 
-                backgroundDimmingView.alpha = progress * backgroundDimmingOpacity
+                if isAutoDimming {
+                    backgroundDimmingView.alpha = progress * backgroundDimmingOpacity
+                }
                 
                 backgroundDimmingView.isUserInteractionEnabled = true
             }
@@ -1664,7 +1682,12 @@ extension PulleyViewController: UIScrollViewDelegate {
             {
                 if backgroundDimmingView.alpha >= 0.001
                 {
-                    backgroundDimmingView.alpha = 0.0
+                    if !isAutoDimming && drawerPosition != .closed {
+                        backgroundDimmingView.alpha = 0.3
+                    }
+                    else {
+                        backgroundDimmingView.alpha = 0.0
+                    }
                     
                     delegate?.makeUIAdjustmentsForFullscreen?(progress: 0.0, bottomSafeArea: pulleySafeAreaInsets.bottom)
                     (drawerContentViewController as? PulleyDrawerViewControllerDelegate)?.makeUIAdjustmentsForFullscreen?(progress: 0.0, bottomSafeArea: pulleySafeAreaInsets.bottom)
