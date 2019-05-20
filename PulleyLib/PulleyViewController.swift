@@ -1285,11 +1285,7 @@ open class PulleyViewController: UIViewController, PulleyDrawerViewControllerDel
         controller.view.frame = primaryContentContainer.bounds
         controller.view.layoutIfNeeded()
         
-        if animated@IBInspectable public var isAutoDimming: Bool = false {
-            didSet {
-                
-            }
-        }
+        if animated
         {
             UIView.transition(with: primaryContentContainer, duration: 0.5, options: .transitionCrossDissolve, animations: { [weak self] () -> Void in
                 
